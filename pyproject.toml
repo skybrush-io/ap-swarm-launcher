@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "ap-swarm-launcher"
+version = "0.1.0"
+description = "Simplified ArduPilot SITL launcher for multi-drone simulations"
+authors = ["Tamas Nepusz <ntamas@gmail.com>"]
+license = "MIT"
+packages = [
+    { include = "ap_swarm_launcher", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+trio = "^0.21.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

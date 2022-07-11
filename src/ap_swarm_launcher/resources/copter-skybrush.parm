@@ -1,0 +1,170 @@
+# Default parameter file to use for the ArduPilot SITL simulator when
+# testing Skybrush shows
+
+# The initial section of this file is identical to ArduPilot's default
+# autotest parameters for a quadcopter
+
+FRAME_TYPE  0
+FS_THR_ENABLE   1
+BATT_MONITOR    4
+COMPASS_OFS_X   5
+COMPASS_OFS_Y   13
+COMPASS_OFS_Z   -18
+COMPASS_OFS2_X   5
+COMPASS_OFS2_Y   13
+COMPASS_OFS2_Z   -18
+COMPASS_OFS3_X   5
+COMPASS_OFS3_Y   13
+COMPASS_OFS3_Z   -18
+FENCE_RADIUS    150
+FRAME_CLASS     1
+RC1_MAX         2000.000000
+RC1_MIN         1000.000000
+RC1_TRIM        1500.000000
+RC2_MAX         2000.000000
+RC2_MIN         1000.000000
+RC2_TRIM        1500.000000
+RC3_MAX         2000.000000
+RC3_MIN         1000.000000
+RC3_TRIM        1500.000000
+RC4_MAX         2000.000000
+RC4_MIN         1000.000000
+RC4_TRIM        1500.000000
+RC5_MAX         2000.000000
+RC5_MIN         1000.000000
+RC5_TRIM        1500.000000
+RC6_MAX         2000.000000
+RC6_MIN         1000.000000
+RC6_TRIM        1500.000000
+RC7_MAX         2000.000000
+RC7_MIN         1000.000000
+RC7_OPTION      248
+RC7_TRIM        1500.000000
+RC8_MAX         2000.000000
+RC8_MIN         1000.000000
+RC8_TRIM        1500.000000
+FS_GCS_ENABLE   0
+SUPER_SIMPLE    0
+SIM_GPS_DELAY   1
+SIM_WIND_SPD    0
+SIM_WIND_TURB   0
+SIM_BARO_RND    0
+SIM_MAG_RND     0
+SIM_GPS_GLITCH_X    0
+SIM_GPS_GLITCH_Y    0
+SIM_GPS_GLITCH_Z    0
+# we need small INS_ACC offsets so INS is recognised as being calibrated
+INS_ACCOFFS_X   0.001
+INS_ACCOFFS_Y   0.001
+INS_ACCOFFS_Z   0.001
+INS_ACCSCAL_X   1.001
+INS_ACCSCAL_Y   1.001
+INS_ACCSCAL_Z   1.001
+INS_ACC2OFFS_X   0.001
+INS_ACC2OFFS_Y   0.001
+INS_ACC2OFFS_Z   0.001
+INS_ACC2SCAL_X   1.001
+INS_ACC2SCAL_Y   1.001
+INS_ACC2SCAL_Z   1.001
+INS_ACC3OFFS_X   0.000
+INS_ACC3OFFS_Y   0.000
+INS_ACC3OFFS_Z   0.000
+INS_ACC3SCAL_X   1.000
+INS_ACC3SCAL_Y   1.000
+INS_ACC3SCAL_Z   1.000
+MOT_THST_EXPO 0.5
+MOT_THST_HOVER  0.36
+MOT_PWM_MIN     1000
+MOT_PWM_MAX     2000
+MOT_BAT_VOLT_MIN 9.6
+MOT_BAT_VOLT_MAX 12.8
+
+##############################
+# Skybrush-specific settings
+
+# Configure flgiht modes as follows
+# ALT_HOLD, LOITER, DRONE_SHOW, STABILIZE, RTL, LAND
+FLTMODE1        2
+FLTMODE2        5
+FLTMODE3        127
+FLTMODE4        0
+FLTMODE5        6
+FLTMODE6        9
+
+# Force serial port protocol to MAVLink 2
+SERIAL0_PROTOCOL 2
+
+# Set type of LED channel 0 to "servo"
+SHOW_LED0_TYPE 6
+SHOW_LED0_CHAN 0
+SERVO9_FUNCTION 120
+SERVO10_FUNCTION 121
+SERVO11_FUNCTION 122
+SERVO12_FUNCTION 123
+
+# Boot with show mode (only for operating without an RC)
+SHOW_MODE_BOOT 1
+
+# Allow drone to continue mission when in guided mode; this is needed because
+# we treat the drone show mode the same way as guided (with the added twist that
+# we do not return in show mode even if GCS connection is lost)
+FS_OPTIONS 4
+
+# Use GPS as primary altitude source in EKF2
+EK2_ALT_SOURCE 2
+
+# Use GPS as primary altitude source in EKF3
+# The following applies to ArduCopter 4.0 but not to 4.1
+EK3_ALT_SOURCE 2
+
+# Use GPS as primary altitude source in EKF3
+# The following applies to ArduCopter >= 4.1 but not 4.0
+EK3_SRC1_POSZ 3
+
+# Decrease the noise level of the altitude measurements -- this is opinionated,
+# the default (10) might also be okay
+EK2_ALT_M_NSE 3
+EK3_ALT_M_NSE 3
+
+# More aggressive WPNAV parameters, typical of a show drone
+WPNAV_ACCEL 800
+WPNAV_ACCEL_Z 500
+WPNAV_SPEED 1000
+WPNAV_SPEED_DN 300
+WPNAV_SPEED_UP 550
+WPNAV_JERK 10
+
+# More aggressive PSC parameters to ensure that the position controller does
+# not interfere too much with the position and velocity targets that we feed it
+PSC_JERK_XY 30
+PSC_JERK_Z 30
+
+# Stop the drone from turning towards the next waypoint during show
+WP_YAW_BEHAVIOR 0
+
+# We don't need terrain following
+TERRAIN_ENABLE 0
+
+##############################
+# Simulator-specific settings
+
+# Disable the serial ports that we won't use in the simulator. This means that
+# we won't open sockets for them in the SITL if not needed.
+SERIAL1_PROTOCOL -1
+SERIAL2_PROTOCOL -1
+
+# In SITL, one needs to simulate no RC in order for SHOW_MODE_BOOT to take effect
+SIM_RC_FAIL 1
+
+# Since we have no RC now, we should disable the RC failsafe
+FS_THR_ENABLE 0
+
+#####################
+# Debugging settings
+
+# Set type of LED channel 0 to "debug"
+# SHOW_LED0_TYPE 4
+
+# Add a small single-motor failure to emulate yaw imbalance
+# SIM_ENGINE_FAIL 0
+# SIM_ENGINE_MUL 0.75
