@@ -156,6 +156,9 @@ SERIAL2_PROTOCOL -1
 # In SITL, one needs to simulate no RC in order for SHOW_MODE_BOOT to take effect
 SIM_RC_FAIL 1
 
+# Disable terrain simulation
+SIM_TERRAIN 0
+
 # Since we have no RC now, we should disable the RC failsafe
 FS_THR_ENABLE 0
 
