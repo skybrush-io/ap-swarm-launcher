@@ -19,8 +19,8 @@ these steps:
    in it.
 
 3. Run `poetry run ap-sitl-swarm SITL_PATH` to launch a single SITL instance
-   with a pre-compiled SITL executable at `${SITL_PATH}` at the default
-   location. Use the `-h` switch for more options.
+   with a pre-compiled SITL executable at `${SITL_PATH}`. Use the `-h` switch
+   for more options.
 
 Tested on Linux and macOS. May or may not work on Windows.
 
