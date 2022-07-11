@@ -272,13 +272,13 @@ def parse_location(value: str) -> LocationDefinition:
 
 
 LOCATIONS: Dict[str, LocationDefinition] = {
-    "Farkashegy": LocationDefinition(
-        GPSCoordinate(lat=47.4832407, lon=18.9168034, amsl=210), orientation=59
+    "CMAC": LocationDefinition(
+        GPSCoordinate(lat=-35.363261, lon=149.165230, amsl=584), orientation=353
     )
 }
 """Dictionary of commonly used locations, mapping the name of a location to a
 location definition.
 """
 
-DEFAULT_LOCATION = LOCATIONS["Farkashegy"]
+DEFAULT_LOCATION = LOCATIONS["CMAC"]
 """Default location to use in the codebase."""
