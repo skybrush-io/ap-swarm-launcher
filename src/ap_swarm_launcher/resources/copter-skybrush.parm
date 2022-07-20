@@ -38,7 +38,6 @@ RC6_MIN         1000.000000
 RC6_TRIM        1500.000000
 RC7_MAX         2000.000000
 RC7_MIN         1000.000000
-RC7_OPTION      248
 RC7_TRIM        1500.000000
 RC8_MAX         2000.000000
 RC8_MIN         1000.000000
@@ -82,7 +81,7 @@ MOT_BAT_VOLT_MAX 12.8
 ##############################
 # Skybrush-specific settings
 
-# Configure flgiht modes as follows
+# Configure flight modes as follows
 # ALT_HOLD, LOITER, DRONE_SHOW, STABILIZE, RTL, LAND
 FLTMODE1        2
 FLTMODE2        5
@@ -90,6 +89,9 @@ FLTMODE3        127
 FLTMODE4        0
 FLTMODE5        6
 FLTMODE6        9
+
+# Use RC switch on channel 7 to start the show
+RC7_OPTION      248
 
 # Force serial port protocol to MAVLink 2
 SERIAL0_PROTOCOL 2
