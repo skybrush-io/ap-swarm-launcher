@@ -5,6 +5,7 @@ import sys
 from argparse import ArgumentParser
 from functools import partial
 from pathlib import Path
+from random import random
 from typing import List, Optional, Sequence, Tuple, Union
 
 from ap_swarm_launcher.formations import create_grid_formation
@@ -82,6 +83,20 @@ def create_parser() -> ArgumentParser:
         metavar="DIST",
         help="use DIST meters of spacing between drones in the initial grid formation",
     )
+    parser.add_argument(
+        "--pos-noise",
+        type=float,
+        default=0.0,
+        metavar="DIST",
+        help="perturb the drone positions with Gaussian noise with a standard deviation of DIST",
+    )
+    parser.add_argument(
+        "--yaw-noise",
+        type=float,
+        default=0.0,
+        metavar="ANGLE",
+        help="perturb the yaw angles with Gaussian noise with a standard deviation of ANGLE",
+    )
 
     parser.add_argument(
         "sitl_executable",
@@ -99,6 +114,8 @@ async def run(
     param: Sequence[Union[Path, Tuple[str, float]]] = (),
     spacing: float = 3,
     num_drones_per_row: Optional[int] = None,
+    pos_noise: float = 0.0,
+    yaw_noise: float = 0.0,
 ) -> None:
     gcs_address = "127.0.0.1:14550"
     multicast_address = "239.255.67.77:14555"
@@ -106,7 +123,7 @@ async def run(
     if num_drones_per_row is None:
         num_drones_per_row = max(1, int(round(num_drones**0.5)))
 
-    grid = create_grid_formation(num_drones_per_row, spacing)
+    grid = create_grid_formation(num_drones_per_row, spacing, pos_noise)
 
     param_sources: List[Union[Path, str, Tuple[str, float]]] = [
         "embedded://copter-skybrush.parm"
@@ -123,7 +140,10 @@ async def run(
         multicast_address=multicast_address,
     ).use() as swarm:
         for i in range(num_drones):
-            await swarm.add_drone(home=grid(i))
+            await swarm.add_drone(
+                home=grid(i),
+                heading=home.orientation + (random() * 2 - 1) * yaw_noise,
+            )
 
         # We need to re-route broadcast traffic sent to the port of the
         # multicast address because Skybrush will send broadcast traffic
