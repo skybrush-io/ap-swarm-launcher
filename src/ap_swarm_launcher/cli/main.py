@@ -120,6 +120,8 @@ async def run(
     gcs_address = "127.0.0.1:14550"
     multicast_address = "239.255.67.77:14555"
 
+    sitl_executable = Path.cwd() / sitl_executable
+
     if num_drones_per_row is None:
         num_drones_per_row = max(1, int(round(num_drones**0.5)))
 
