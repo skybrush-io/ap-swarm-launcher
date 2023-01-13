@@ -267,7 +267,7 @@ class SimulatedDroneSwarm:
 
         own_param_file = drone_dir / "default.param"
 
-        tcp_port = self._tcp_base_port + index if self._tcp_base_port else None
+        tcp_port = self._tcp_base_port + index - 1 if self._tcp_base_port else None
 
         await AsyncPath(drone_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
@@ -327,11 +327,7 @@ class SimulatedDroneSwarm:
                     if self._multicast_address
                     else "udpclient:127.0.0.1:14555"
                 ),
-                "D": (
-                    f"tcp:localhost:{tcp_port}"
-                    if tcp_port
-                    else "udpclient:127.0.0.1:14552"
-                ),
+                "D": (f"tcp:{tcp_port}" if tcp_port else "udpclient:127.0.0.1:14552"),
             },
         )
 
