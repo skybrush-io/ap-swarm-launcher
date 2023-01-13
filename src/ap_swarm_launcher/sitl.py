@@ -153,6 +153,7 @@ class SimulatedDroneSwarm:
 
     _executable: Path
     _swarm_dir: Optional[Path] = None
+    _tcp_base_port: Optional[int] = None
 
     def __init__(
         self,
@@ -164,6 +165,7 @@ class SimulatedDroneSwarm:
         default_heading: Optional[float] = None,
         gcs_address: str = "127.0.0.1:14550",
         multicast_address: Optional[str] = None,
+        tcp_base_port: Optional[int] = None,
     ):
         """Constructor.
 
@@ -186,10 +188,15 @@ class SimulatedDroneSwarm:
             multicast_address: optional multicast IP address and port where the
                 simulated drones will listen for packets that are intended to
                 reach all the drones in the swarm
+            tcp_base_port: TCP port number where the simulated drones will
+                be available via a TCP connection. This is the base port
+                number; each drone will get a new TCP port, counting upwards
+                from this base port number.
         """
         self._executable = Path(executable)
         self._dir = Path(dir) if dir else None
         self._params = list(params) if params else []
+        self._tcp_base_port = int(tcp_base_port) if tcp_base_port else None
 
         if coordinate_system:
             self._coordinate_system = coordinate_system
@@ -260,6 +267,8 @@ class SimulatedDroneSwarm:
 
         own_param_file = drone_dir / "default.param"
 
+        tcp_port = self._tcp_base_port + index if self._tcp_base_port else None
+
         await AsyncPath(drone_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
         async with await open_file(own_param_file, "wb+") as fp:
@@ -292,6 +301,11 @@ class SimulatedDroneSwarm:
                 await fp.write("SERIAL1_PROTOCOL\t2\n".encode("utf-8"))
                 await fp.write("SERIAL1_OPTIONS\t1024\n".encode("utf-8"))
 
+            if tcp_port:
+                # We also need a serial port for receiving direct traffic from
+                # the TCP port associated to the UAV.
+                await fp.write("SERIAL2_PROTOCOL\t2\n".encode("utf-8"))
+
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
         process = await start_simulator(
@@ -313,7 +327,11 @@ class SimulatedDroneSwarm:
                     if self._multicast_address
                     else "udpclient:127.0.0.1:14555"
                 ),
-                "D": "udpclient:127.0.0.1:14552",
+                "D": (
+                    f"tcp:localhost:{tcp_port}"
+                    if tcp_port
+                    else "udpclient:127.0.0.1:14552"
+                ),
             },
         )
 

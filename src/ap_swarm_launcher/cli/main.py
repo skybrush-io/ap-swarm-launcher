@@ -33,6 +33,13 @@ def create_parser() -> ArgumentParser:
     parser = ArgumentParser(prog="ap-sitl-swarm")
 
     parser.add_argument(
+        "--tcp-base-port",
+        default=None,
+        type=int,
+        metavar="PORT",
+        help="open TCP connections for each drone, starting from PORT",
+    )
+    parser.add_argument(
         "-d",
         "--data-dir",
         default=None,
@@ -116,6 +123,7 @@ async def run(
     num_drones_per_row: Optional[int] = None,
     pos_noise: float = 0.0,
     yaw_noise: float = 0.0,
+    tcp_base_port: Optional[int] = None,
 ) -> None:
     gcs_address = "127.0.0.1:14550"
     multicast_address = "239.255.67.77:14555"
@@ -140,6 +148,7 @@ async def run(
         amsl=home.origin.amsl,
         gcs_address=gcs_address,
         multicast_address=multicast_address,
+        tcp_base_port=tcp_base_port,
     ).use() as swarm:
         for i in range(num_drones):
             await swarm.add_drone(
