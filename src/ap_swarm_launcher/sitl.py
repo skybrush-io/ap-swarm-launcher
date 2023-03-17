@@ -49,7 +49,7 @@ def create_args_for_simulator(
     Parameters:
         model: dynamics model of the simulated vehicle
         param_file: name or path of the parameter file that holds the default
-            parameters of the
+            parameters of the vehicle
         use_console: whether the SITL simulator should use the console instead
             of a TCP port for its primary input / output stream
         home: the home position of the drone
