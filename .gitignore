@@ -8,6 +8,7 @@
 build/
 dist/
 htmlcov/
+test-swarm/
 .eggs/
 .tox/
 .venv/
