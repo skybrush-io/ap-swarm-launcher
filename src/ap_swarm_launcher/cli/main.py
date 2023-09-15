@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser
 from functools import partial
 from pathlib import Path
-from random import random
+from random import normalvariate
 from typing import List, Optional, Sequence, Tuple, Union
 
 from ap_swarm_launcher.formations import create_grid_formation
@@ -95,14 +95,20 @@ def create_parser() -> ArgumentParser:
         type=float,
         default=0.0,
         metavar="DIST",
-        help="perturb the drone positions with Gaussian noise with a standard deviation of DIST",
+        help=(
+            "perturb the initial drone positions with Gaussian noise with a "
+            "standard deviation of DIST"
+        ),
     )
     parser.add_argument(
         "--yaw-noise",
         type=float,
         default=0.0,
         metavar="ANGLE",
-        help="perturb the yaw angles with Gaussian noise with a standard deviation of ANGLE",
+        help=(
+            "perturb the yaw angles with Gaussian noise with a standard "
+            "deviation of ANGLE"
+        ),
     )
 
     parser.add_argument(
@@ -153,7 +159,7 @@ async def run(
         for i in range(num_drones):
             await swarm.add_drone(
                 home=grid(i),
-                heading=home.orientation + (random() * 2 - 1) * yaw_noise,
+                heading=(home.orientation + normalvariate(0, yaw_noise)) % 360,
             )
 
         # We need to re-route broadcast traffic sent to the port of the

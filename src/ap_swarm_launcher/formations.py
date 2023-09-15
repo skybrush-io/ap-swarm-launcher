@@ -1,6 +1,6 @@
 """Takeoff area formations for the SITL drone swarm simulator."""
 
-from random import random
+from random import normalvariate
 from typing import Callable, Tuple
 
 __all__ = ("create_grid_formation",)
@@ -16,8 +16,8 @@ def create_grid_formation(
     def grid(index: int):
         row_index, col_index = divmod(index, num_drones_per_row)
         return (
-            float(row_index) * spacing + (2 * random() - 1) * noise,
-            -float(col_index) * spacing + (2 * random() - 1) * noise,
+            float(row_index) * spacing + normalvariate(0, noise),
+            -float(col_index) * spacing + normalvariate(0, noise),
         )
 
     return grid
