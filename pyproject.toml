@@ -12,7 +12,7 @@ packages = [
 python = "^3.7"
 trio = "^0.21.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 [tool.poetry.scripts]
 ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
