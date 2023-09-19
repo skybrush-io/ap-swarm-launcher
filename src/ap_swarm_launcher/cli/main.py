@@ -40,6 +40,13 @@ def create_parser() -> ArgumentParser:
         help="open TCP connections for each drone, starting from PORT",
     )
     parser.add_argument(
+        "--no-udp",
+        dest="use_udp",
+        default=True,
+        action="store_false",
+        help="do not send status packets to UDP port 14550",
+    )
+    parser.add_argument(
         "-d",
         "--data-dir",
         default=None,
@@ -130,8 +137,9 @@ async def run(
     pos_noise: float = 0.0,
     yaw_noise: float = 0.0,
     tcp_base_port: Optional[int] = None,
+    use_udp: bool = True,
 ) -> None:
-    gcs_address = "127.0.0.1:14550"
+    gcs_address = "127.0.0.1:14550" if use_udp else None
     multicast_address = "239.255.67.77:14555"
 
     sitl_executable = Path.cwd() / sitl_executable

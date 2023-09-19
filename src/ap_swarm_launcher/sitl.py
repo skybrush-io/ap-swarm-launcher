@@ -152,6 +152,7 @@ class SimulatedDroneSwarm:
     """
 
     _executable: Path
+    _gcs_address: Optional[str] = None
     _swarm_dir: Optional[Path] = None
     _tcp_base_port: Optional[int] = None
 
@@ -163,7 +164,7 @@ class SimulatedDroneSwarm:
         coordinate_system: Optional[FlatEarthToGPSCoordinateTransformation] = None,
         amsl: Optional[float] = None,
         default_heading: Optional[float] = None,
-        gcs_address: str = "127.0.0.1:14550",
+        gcs_address: Optional[str] = "127.0.0.1:14550",
         multicast_address: Optional[str] = None,
         tcp_base_port: Optional[int] = None,
     ):
@@ -184,7 +185,8 @@ class SimulatedDroneSwarm:
                 each entry is either a Path object pointing to a parameter file
                 or a name-value pair as a tuple
             gcs_address: target IP address and port where the simulated drones
-                will send their status packets
+                will send their UDP status packets, or ``None`` or an empty string
+                if the simulated drones do not need to send UDP status packets
             multicast_address: optional multicast IP address and port where the
                 simulated drones will listen for packets that are intended to
                 reach all the drones in the swarm
@@ -318,16 +320,24 @@ class SimulatedDroneSwarm:
             index=index - 1,
             cwd=drone_fs_dir,
             uarts={
-                # localhost is not okay, at least not on macOS
-                "A": f"udpclient:{self._gcs_address}",
-                # the following two ports might not be used -- they must be there
-                # to prevent firewall warnings on macOS
+                # Port A is the "primary output" where the UDP status packets
+                # are sent. This corresponds to SERIAL0 in the params.
+                "A": (
+                    f"udpclient:{self._gcs_address}" if self._gcs_address else "none"
+                ),
+                #
+                # Port C is the port for receiving multicast traffic (which is
+                # used to simulate broadcasts). This corresponds to SERIAL1 in
+                # the params.
                 "C": (
                     f"mcast:{self._multicast_address}"
                     if self._multicast_address
-                    else "udpclient:127.0.0.1:14555"
+                    else "none"
                 ),
-                "D": (f"tcp:{tcp_port}" if tcp_port else "udpclient:127.0.0.1:14552"),
+                #
+                # Port D is the port for direct access via TCP. This corresponds
+                # to SERIAL2 in the params.
+                "D": (f"tcp:{tcp_port}" if tcp_port else "none"),
             },
         )
 
