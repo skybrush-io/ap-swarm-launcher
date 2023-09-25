@@ -40,6 +40,13 @@ def create_parser() -> ArgumentParser:
         help="open TCP connections for each drone, starting from PORT",
     )
     parser.add_argument(
+        "--serial-port",
+        default=None,
+        type=str,
+        metavar="PORT",
+        help="aggregate all packets from the drones to the given serial PORT",
+    )
+    parser.add_argument(
         "--no-udp",
         dest="use_udp",
         default=True,
@@ -137,6 +144,7 @@ async def run(
     pos_noise: float = 0.0,
     yaw_noise: float = 0.0,
     tcp_base_port: Optional[int] = None,
+    serial_port: Optional[str] = None,
     use_udp: bool = True,
 ) -> None:
     gcs_address = "127.0.0.1:14550" if use_udp else None
@@ -163,6 +171,7 @@ async def run(
         gcs_address=gcs_address,
         multicast_address=multicast_address,
         tcp_base_port=tcp_base_port,
+        serial_port=serial_port,
     ).use() as swarm:
         for i in range(num_drones):
             await swarm.add_drone(

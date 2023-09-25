@@ -1,4 +1,6 @@
-from contextlib import asynccontextmanager
+from __future__ import annotations
+
+from contextlib import AsyncExitStack, asynccontextmanager, closing
 from importlib.resources import path as resource_path
 from itertools import count
 from pathlib import Path
@@ -25,6 +27,7 @@ from .locations import (
     FlatEarthToGPSCoordinateTransformation,
     GPSCoordinate,
 )
+from .udp_serial_bridge import UDPSerialBridge
 from .utils import copy_file_async, maybe_temporary_working_directory
 
 __all__ = (
@@ -152,9 +155,22 @@ class SimulatedDroneSwarm:
     """
 
     _executable: Path
+    """Full path to the ArduPilot SITL executable."""
+
     _gcs_address: Optional[str] = None
+
     _swarm_dir: Optional[Path] = None
+
+    _serial_port: Optional[str] = None
+    """Virtual serial port where the status packets of the simulated drones will be
+    aggregated and dumped to. ``None`` if the serial port is not needed.
+    """
+
     _tcp_base_port: Optional[int] = None
+    """Base number of a TCP port range where the simulated instances will listen
+    for incoming connections, or ``None`` if TCP ports are not needed. The i-th
+    simulated instance (0-based indexing) will listen at ``_tcp_base_port + i``.
+    """
 
     def __init__(
         self,
@@ -167,11 +183,12 @@ class SimulatedDroneSwarm:
         gcs_address: Optional[str] = "127.0.0.1:14550",
         multicast_address: Optional[str] = None,
         tcp_base_port: Optional[int] = None,
+        serial_port: Optional[str] = None,
     ):
         """Constructor.
 
         Parameters:
-            executable: full path to the Ardupilot SITL executable
+            executable: full path to the ArduPilot SITL executable
             dir: the configuration directory of the swarm. When omitted, a
                 temporary directory will be created for the content related
                 to the swarm.
@@ -198,6 +215,7 @@ class SimulatedDroneSwarm:
         self._executable = Path(executable)
         self._dir = Path(dir) if dir else None
         self._params = list(params) if params else []
+        self._serial_port = serial_port
         self._tcp_base_port = int(tcp_base_port) if tcp_base_port else None
 
         if coordinate_system:
@@ -221,19 +239,48 @@ class SimulatedDroneSwarm:
         self._swarm_dir = None
 
     @asynccontextmanager
-    async def use(self) -> AsyncIterator["SimulatedDroneSwarmContext"]:
+    async def use(self) -> AsyncIterator[SimulatedDroneSwarmContext]:
         """Async context manager that starts the swarm when entered and stops
         the swarm when exited.
         """
-        async with open_nursery() as self._nursery:
-            with maybe_temporary_working_directory(self._dir) as self._swarm_dir:
-                async with AsyncProcessRunner(sidebar_width=5) as self._runner:
-                    try:
-                        yield SimulatedDroneSwarmContext(self)
-                    finally:
-                        self._nursery = None
-                        self._runner = None
-                        self._swarm_dir = None
+        async with AsyncExitStack() as stack:
+            self._nursery = await stack.enter_async_context(open_nursery())
+            self._swarm_dir = stack.enter_context(
+                maybe_temporary_working_directory(self._dir)
+            )
+            self._runner = await stack.enter_async_context(
+                AsyncProcessRunner(sidebar_width=5)
+            )
+
+            if self._serial_port:
+                from serial import Serial
+
+                udp_port = self._get_primary_udp_output_address()
+                assert udp_port is not None
+
+                serial_port = stack.enter_context(
+                    closing(Serial(self._serial_port, baudrate=57600))
+                )
+
+                await stack.enter_async_context(
+                    UDPSerialBridge(udp_port, serial_port).use()
+                )
+
+            try:
+                yield SimulatedDroneSwarmContext(self)
+            finally:
+                self._nursery = None
+                self._runner = None
+                self._swarm_dir = None
+
+    def _get_primary_udp_output_address(self) -> Optional[str]:
+        return (
+            self._gcs_address
+            if self._gcs_address
+            else "127.0.0.1:14550"
+            if self._serial_port
+            else None
+        )
 
     def _request_stop(self):
         """Requests the simulator processes of the swarm to stop."""
@@ -310,6 +357,13 @@ class SimulatedDroneSwarm:
 
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
+        # Determine where the UDP status packets should be sent. If we have a
+        # GCS address, send them there. If we don't, but we need to aggregate
+        # the output to a serial port, send them to a dummy UDP port and then
+        # aggregate the packets in a separate task (which we assume already
+        # exists in the background)
+        primary_udp_output = self._get_primary_udp_output_address()
+
         process = await start_simulator(
             self._executable,
             runner=self._runner,
@@ -323,7 +377,7 @@ class SimulatedDroneSwarm:
                 # Port A is the "primary output" where the UDP status packets
                 # are sent. This corresponds to SERIAL0 in the params.
                 "A": (
-                    f"udpclient:{self._gcs_address}" if self._gcs_address else "none"
+                    f"udpclient:{primary_udp_output}" if primary_udp_output else "none"
                 ),
                 #
                 # Port C is the port for receiving multicast traffic (which is
