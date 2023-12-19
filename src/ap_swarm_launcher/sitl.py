@@ -37,7 +37,7 @@ __all__ = (
 
 
 def create_args_for_simulator(
-    model: str = "quad",
+    model: Optional[str] = None,
     param_file: Optional[Union[str, Path]] = None,
     use_console: bool = False,
     home: GPSCoordinate = DEFAULT_LOCATION.origin,
@@ -68,6 +68,8 @@ def create_args_for_simulator(
         rc_input_port: port to listen on for RC input
         speedup: simulation speedup factor; use 1 for real-time
     """
+    model = model or "quad"
+
     result = ["-M", model, "--disable-fgview"]
 
     if index is not None:
@@ -184,6 +186,7 @@ class SimulatedDroneSwarm:
         multicast_address: Optional[str] = None,
         tcp_base_port: Optional[int] = None,
         serial_port: Optional[str] = None,
+        model: Optional[str] = None,
     ):
         """Constructor.
 
@@ -211,6 +214,7 @@ class SimulatedDroneSwarm:
                 be available via a TCP connection. This is the base port
                 number; each drone will get a new TCP port, counting upwards
                 from this base port number.
+            model: optional vehicle model name passed to the simulator
         """
         self._executable = Path(executable)
         self._dir = Path(dir) if dir else None
@@ -231,6 +235,7 @@ class SimulatedDroneSwarm:
 
         self._gcs_address = gcs_address
         self._multicast_address = multicast_address
+        self._model = model
 
         self._index_generator = count(1)
 
@@ -372,6 +377,7 @@ class SimulatedDroneSwarm:
             home=geodetic_home,
             heading=heading,
             index=index - 1,
+            model=self._model,
             cwd=drone_fs_dir,
             uarts={
                 # Port A is the "primary output" where the UDP status packets

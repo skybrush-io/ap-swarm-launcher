@@ -73,6 +73,14 @@ def create_parser() -> ArgumentParser:
         ),
     )
     parser.add_argument(
+        "-m",
+        "--model",
+        default=None,
+        type=str,
+        help="The name of the vehicle model to use in the simulator (e.g., 'quad', 'JSON', 'airsim' etc.)",
+        metavar="MODEL",
+    )
+    parser.add_argument(
         "-n",
         "--num-drones",
         default=1,
@@ -146,6 +154,7 @@ async def run(
     tcp_base_port: Optional[int] = None,
     serial_port: Optional[str] = None,
     use_udp: bool = True,
+    model: Optional[str] = None,
 ) -> None:
     gcs_address = "127.0.0.1:14550" if use_udp else None
     multicast_address = "239.255.67.77:14555"
@@ -172,6 +181,7 @@ async def run(
         multicast_address=multicast_address,
         tcp_base_port=tcp_base_port,
         serial_port=serial_port,
+        model=model,
     ).use() as swarm:
         for i in range(num_drones):
             await swarm.add_drone(
