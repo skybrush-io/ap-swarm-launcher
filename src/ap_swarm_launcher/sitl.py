@@ -37,6 +37,49 @@ __all__ = (
 )
 
 
+_uart_id_to_index_map: dict[str, int] = {
+    "A": 0,
+    "B": 3,
+    "C": 1,
+    "D": 2,
+    "E": 4,
+    "F": 5,
+    "G": 6,
+    "H": 7,
+    "I": 8,
+    "J": 9,
+}
+
+"""Mapping from character-based UART IDs (uartA, uartB etc) to UART indices
+used in the SITL from ArduCopter 4.5.0.
+"""
+
+_uart_index_to_id_map: dict[int, str] = {v: k for k, v in _uart_id_to_index_map.items()}
+"""Mapping from UART indices to character-based UART IDs (uartA, uartB etc)
+used in the SITL before ArduCopter 4.5.0.
+"""
+
+
+def _to_uart_index(id_or_index: Union[str, int]) -> int:
+    """Takes an input that is either a numeric UART index or a character-based
+    UART ID and returns the numeric UART index.
+    """
+    if isinstance(id_or_index, int):
+        return id_or_index
+    else:
+        return _uart_id_to_index_map[id_or_index]
+
+
+def _to_uart_id(id_or_index: Union[str, int]) -> str:
+    """Takes an input that is either a numeric UART index or a character-based
+    UART ID and returns the character-based UART ID.
+    """
+    if isinstance(id_or_index, str):
+        return id_or_index
+    else:
+        return _uart_index_to_id_map[id_or_index]
+
+
 def create_args_for_simulator(
     model: Optional[str] = None,
     param_file: Optional[Union[str, Path]] = None,
@@ -89,9 +132,8 @@ def create_args_for_simulator(
         result.extend(["--rc-in-port", str(rc_input_port)])
 
     if uarts:
-        for uart_id, value in uarts.items():
-            uart_id = uart_id.upper()
-            uart_index = ord(uart_id) - ord("A")
+        for uart_id_or_index, value in uarts.items():
+            uart_index = _to_uart_index(uart_id_or_index)
             result.append(f"--serial{uart_index}={value}")
 
     home_as_str = f"{home.lat:.7f},{home.lon:.7f},{home.amsl:.1f},{int(heading)}"
@@ -161,7 +203,7 @@ async def start_simulator(
             for i in range(10):
                 if arg.startswith(f"--serial{i}="):
                     _, _, value = arg.partition("=")
-                    name = "uart" + chr(ord("A") + i)
+                    name = "--uart" + _to_uart_id(i)
                     return f"{name}={value}"
             return arg
 
