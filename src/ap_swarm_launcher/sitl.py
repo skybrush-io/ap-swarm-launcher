@@ -102,8 +102,6 @@ def create_args_for_simulator(
     # not set explicitly
     result.extend(["--speedup", str(speedup)])
 
-    print(repr(result))
-
     return result
 
 
