@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ap-swarm-launcher"
-version = "0.3.1"
+version = "0.4.0"
 description = "Simplified ArduPilot SITL launcher for multi-drone simulations"
 authors = ["Tamas Nepusz <ntamas@gmail.com>"]
 license = "MIT"
