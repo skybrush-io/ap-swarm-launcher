@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager, closing
+from functools import cache
 from importlib.resources import path as resource_path
 from itertools import count
 from pathlib import Path
@@ -70,7 +71,7 @@ def create_args_for_simulator(
     """
     model = model or "quad"
 
-    result = ["-M", model, "--disable-fgview"]
+    result = ["-M", model]
 
     if index is not None:
         if index < 0:
@@ -90,7 +91,8 @@ def create_args_for_simulator(
     if uarts:
         for uart_id, value in uarts.items():
             uart_id = uart_id.upper()
-            result.append(f"--uart{uart_id}={value}")
+            uart_index = ord(uart_id) - ord("A")
+            result.append(f"--serial{uart_index}={value}")
 
     home_as_str = f"{home.lat:.7f},{home.lon:.7f},{home.amsl:.1f},{int(heading)}"
     result.extend(["--home", home_as_str])
@@ -100,7 +102,26 @@ def create_args_for_simulator(
     # not set explicitly
     result.extend(["--speedup", str(speedup)])
 
+    print(repr(result))
+
     return result
+
+
+@cache
+def get_simulator_version(executable: Path) -> tuple[int, int, int]:
+    """Determines the version number of the simulator running at the given
+    path.
+
+    We cannot really determine the version number exactly, but we can look at
+    the help string and decide whether we are pre-4.5.0 or post-4.5.0.
+    """
+    from subprocess import run
+
+    proc = run([executable, "--help"], capture_output=True)
+    if b"--disable-fgview" in proc.stdout:
+        return (4, 4, 4)
+    else:
+        return (4, 5, 0)
 
 
 async def start_simulator(
@@ -129,8 +150,25 @@ async def start_simulator(
     Returns:
         the ManagedProcess instance that represents the launched simulator
     """
+    args: list[str]
+
     args = [str(executable)]
     args.extend(create_args_for_simulator(**kwds))
+
+    # Fix up the simulator arguments for ArduCopter pre-4.5.0 where fgview
+    # was enabled by default and had to be disabled explicitly
+    if get_simulator_version(args[0]) < (4, 5, 0):
+
+        def fixup_arg(arg: str) -> str:
+            for i in range(10):
+                if arg.startswith(f"--serial{i}="):
+                    _, _, value = arg.partition("=")
+                    name = "uart" + chr(ord("A") + i)
+                    return f"{name}={value}"
+            return arg
+
+        args = [fixup_arg(arg) for arg in args]
+        args.append("--disable-fgview")
 
     if cwd is not None:
         cwd = str(cwd)
@@ -264,7 +302,7 @@ class SimulatedDroneSwarm:
                 assert udp_port is not None
 
                 serial_port = stack.enter_context(
-                    closing(Serial(self._serial_port, baudrate=57600))
+                    closing(Serial(self._serial_port, baudrate=921600))
                 )
 
                 await stack.enter_async_context(
