@@ -401,6 +401,13 @@ class SimulatedDroneSwarm:
 
         tcp_port = self._tcp_base_port + index - 1 if self._tcp_base_port else None
 
+        # Determine where the UDP status packets should be sent. If we have a
+        # GCS address, send them there. If we don't, but we need to aggregate
+        # the output to a serial port, send them to a dummy UDP port and then
+        # aggregate the packets in a separate task (which we assume already
+        # exists in the background)
+        primary_udp_output = self._get_primary_udp_output_address()
+
         await AsyncPath(drone_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
         async with await open_file(own_param_file, "wb+") as fp:
@@ -426,26 +433,23 @@ class SimulatedDroneSwarm:
 
             await fp.write(f"SYSID_THISMAV\t{index}\n".encode("utf-8"))
 
+            if primary_udp_output:
+                # We need the first serial port for primary telemetry
+                await fp.write("SERIAL1_PROTOCOL\t2\n".encode("utf-8"))
+
             if self._multicast_address:
                 # We need a second serial port for receiving multicast traffic
                 # (which is used to simulate broadcast). At the same time, we
                 # disable MAVLink forwarding to/from this port
-                await fp.write("SERIAL1_PROTOCOL\t2\n".encode("utf-8"))
-                await fp.write("SERIAL1_OPTIONS\t1024\n".encode("utf-8"))
+                await fp.write("SERIAL2_PROTOCOL\t2\n".encode("utf-8"))
+                await fp.write("SERIAL2_OPTIONS\t1024\n".encode("utf-8"))
 
             if tcp_port:
                 # We also need a serial port for receiving direct traffic from
                 # the TCP port associated to the UAV.
-                await fp.write("SERIAL2_PROTOCOL\t2\n".encode("utf-8"))
+                await fp.write("SERIAL0_PROTOCOL\t2\n".encode("utf-8"))
 
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
-
-        # Determine where the UDP status packets should be sent. If we have a
-        # GCS address, send them there. If we don't, but we need to aggregate
-        # the output to a serial port, send them to a dummy UDP port and then
-        # aggregate the packets in a separate task (which we assume already
-        # exists in the background)
-        primary_udp_output = self._get_primary_udp_output_address()
 
         process = await start_simulator(
             self._executable,
@@ -458,24 +462,23 @@ class SimulatedDroneSwarm:
             model=self._model,
             cwd=drone_fs_dir,
             uarts={
-                # Port A is the "primary output" where the UDP status packets
-                # are sent. This corresponds to SERIAL0 in the params.
-                "A": (
+                # Serial port 0 is for direct access via TCP. This corresponds to
+                # SERIAL0 in the params, which is also a "trusted" port on
+                # ArduPilot so it can be used to set up MAVLink signing.
+                0: (f"tcp:{tcp_port}" if tcp_port else "none"),
+                # Serial port 1 is the "primary output" where the UDP status packets
+                # are sent. This corresponds to SERIAL1 in the params.
+                1: (
                     f"udpclient:{primary_udp_output}" if primary_udp_output else "none"
                 ),
-                #
-                # Port C is the port for receiving multicast traffic (which is
-                # used to simulate broadcasts). This corresponds to SERIAL1 in
+                # Serial port 2 is the port for receiving multicast traffic (which is
+                # used to simulate broadcasts). This corresponds to SERIAL2 in
                 # the params.
-                "C": (
+                2: (
                     f"mcast:{self._multicast_address}"
                     if self._multicast_address
                     else "none"
                 ),
-                #
-                # Port D is the port for direct access via TCP. This corresponds
-                # to SERIAL2 in the params.
-                "D": (f"tcp:{tcp_port}" if tcp_port else "none"),
             },
         )
 
