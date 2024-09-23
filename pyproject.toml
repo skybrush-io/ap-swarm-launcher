@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-trio = "^0.21.0"
+trio = ">=0.21.0"
 pyserial = "^3.5"
 
 [tool.poetry.group.dev.dependencies]
