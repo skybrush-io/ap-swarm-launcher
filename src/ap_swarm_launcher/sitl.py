@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager, closing
-from functools import cache
+from functools import lru_cache
 from importlib.resources import path as resource_path
 from itertools import count
 from pathlib import Path
@@ -147,7 +147,7 @@ def create_args_for_simulator(
     return result
 
 
-@cache
+@lru_cache(maxsize=None)
 def get_simulator_version(executable: Path) -> tuple[int, int, int]:
     """Determines the version number of the simulator running at the given
     path.
