@@ -1,23 +1,22 @@
-[tool.poetry]
+[project]
 name = "ap-swarm-launcher"
 version = "0.4.2"
 description = "Simplified ArduPilot SITL launcher for multi-drone simulations"
-authors = ["Tamas Nepusz <ntamas@gmail.com>"]
+authors = [{ name = "Tamas Nepusz", email = "ntamas@gmail.com" }]
 license = "MIT"
-packages = [
-    { include = "ap_swarm_launcher", from = "src" }
-]
+requires-python = ">=3.9"
+dependencies = ["trio>=0.21.0", "pyserial>=3.5"]
 
-[tool.poetry.dependencies]
-python = "^3.7"
-trio = ">=0.21.0"
-pyserial = "^3.5"
-
-[tool.poetry.group.dev.dependencies]
-
-[tool.poetry.scripts]
+[project.scripts]
 ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/ap_swarm_launcher"]
+
+[tool.ruff]
+lint.ignore = ["B905", "C901", "E402", "E501"]
+lint.select = ["B", "C", "E", "F", "W"]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,31 +1,28 @@
-ap-swarm-launcher
-=================
+# ap-swarm-launcher
 
 Simplified ArduPilot SITL launcher for multi-drone simulations. Runs multiple
 ArduPilot SITL instances in parallel, managed by a central process supervisor
 that merges the standard output streams of individual processes and configures
 the SITL instances to start the drones from a grid-like formation.
 
-Installation
-------------
+## Installation
 
-We use `poetry` to manage a Python virtual environment that will contain all
-the dependencies. Install `poetry` first if you don't have it yet, then follow
+We use `uv` to manage a Python virtual environment that will contain all
+the dependencies. Install `uv` first if you don't have it yet, then follow
 these steps:
 
 1. Clone this repository.
 
-2. Run `poetry install` to create a virtualenv and install all the dependencies
+2. Run `uv sync` to create a virtualenv and install all the dependencies
    in it.
 
-3. Run `poetry run ap-sitl-swarm SITL_PATH` to launch a single SITL instance
+3. Run `uv run ap-sitl-swarm SITL_PATH` to launch a single SITL instance
    with a pre-compiled SITL executable at `${SITL_PATH}`. Use the `-h` switch
    for more options.
 
 Tested on Linux and macOS. May or may not work on Windows.
 
-License
--------
+## License
 
 Copyright 2022 CollMot Robotics Ltd.
 
