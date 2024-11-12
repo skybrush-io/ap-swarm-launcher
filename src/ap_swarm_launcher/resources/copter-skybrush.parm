@@ -93,9 +93,6 @@ FLTMODE6        9
 # Use RC switch on channel 7 to start the show
 RC7_OPTION      248
 
-# Force serial port protocol to MAVLink 2
-SERIAL0_PROTOCOL 2
-
 # Set type of LED channel 0 to "servo"
 SHOW_LED0_TYPE 6
 SHOW_LED0_CHAN 0
@@ -151,7 +148,9 @@ TERRAIN_ENABLE 0
 # Simulator-specific settings
 
 # Disable the serial ports that we won't use in the simulator. This means that
-# we won't open sockets for them in the SITL if not needed.
+# we won't open sockets for them in the SITL if not needed. When launching the
+# swarm, these settings will be overridden if needed.
+SERIAL0_PROTOCOL -1
 SERIAL1_PROTOCOL -1
 SERIAL2_PROTOCOL -1
 
