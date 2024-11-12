@@ -315,7 +315,7 @@ class _AsyncProcessRunner:
             for entry in processes:
                 entry.terminate()
 
-            for i in range(5):
+            for _ in range(5):
                 processes = [entry for entry in processes if not entry.terminated]
                 if not processes:
                     break
