@@ -24,7 +24,7 @@ Tested on Linux and macOS. May or may not work on Windows.
 
 ## License
 
-Copyright 2022 CollMot Robotics Ltd.
+Copyright 2022-2024 CollMot Robotics Ltd.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
