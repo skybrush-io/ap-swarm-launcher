@@ -6,12 +6,14 @@ name = "ap-swarm-launcher"
 version = "0.4.2"
 source = { editable = "." }
 dependencies = [
+    { name = "exceptiongroup" },
     { name = "pyserial" },
     { name = "trio" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "exceptiongroup", specifier = ">=1.2.2" },
     { name = "pyserial", specifier = ">=3.5" },
     { name = "trio", specifier = ">=0.21.0" },
 ]

@@ -196,14 +196,14 @@ async def run(
 
 
 def start():
+    from exceptiongroup import suppress
     from trio import run as run_async
 
     parser = create_parser()
     options = parser.parse_args()
 
-    try:
+    exit_code = 0
+    with suppress(KeyboardInterrupt):
         exit_code = run_async(partial(run, **vars(options)))
-    except KeyboardInterrupt:
-        exit_code = 0
 
     sys.exit(exit_code)

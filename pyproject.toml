@@ -5,7 +5,11 @@ description = "Simplified ArduPilot SITL launcher for multi-drone simulations"
 authors = [{ name = "Tamas Nepusz", email = "ntamas@gmail.com" }]
 license = "MIT"
 requires-python = ">=3.9"
-dependencies = ["trio>=0.21.0", "pyserial>=3.5"]
+dependencies = [
+    "trio>=0.21.0",
+    "pyserial>=3.5",
+    "exceptiongroup>=1.2.2",
+]
 
 [project.scripts]
 ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
