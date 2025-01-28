@@ -69,7 +69,9 @@ class UDPSerialBridge:
         async with tx:
             task_status.started()
             while True:
-                data = await to_thread.run_sync(self._port.read, 1, cancellable=True)
+                data = await to_thread.run_sync(
+                    self._port.read, 1, abandon_on_cancel=True
+                )
                 parts.append(data)
                 bytes_read += len(data)
 
@@ -79,7 +81,7 @@ class UDPSerialBridge:
                         break
 
                     data = await to_thread.run_sync(
-                        self._port.read, to_read, cancellable=True
+                        self._port.read, to_read, abandon_on_cancel=True
                     )
                     parts.append(data)
                     bytes_read += len(data)
@@ -106,7 +108,7 @@ class UDPSerialBridge:
         async with rx:
             task_status.started(tx)
             async for data in rx:
-                await to_thread.run_sync(self._port.write, data, cancellable=True)
+                await to_thread.run_sync(self._port.write, data, abandon_on_cancel=True)
 
     async def _write_to_socket(self, socket, *, task_status) -> None:
         tx, rx = open_memory_channel(32)
