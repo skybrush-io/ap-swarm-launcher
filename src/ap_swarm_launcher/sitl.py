@@ -343,7 +343,7 @@ class SimulatedDroneSwarm:
 
                 try:
                     serial_port = stack.enter_context(
-                        closing(Serial(self._serial_port)), baudrate=921600
+                        closing(Serial(self._serial_port, baudrate=921600))
                     )
                 except Exception:
                     # maybe it's a virtual serial port where we cannot set the
