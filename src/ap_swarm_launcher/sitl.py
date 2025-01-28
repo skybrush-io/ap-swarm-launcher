@@ -341,9 +341,16 @@ class SimulatedDroneSwarm:
                 udp_port = self._get_primary_udp_output_address()
                 assert udp_port is not None
 
-                serial_port = stack.enter_context(
-                    closing(Serial(self._serial_port, baudrate=921600))
-                )
+                try:
+                    serial_port = stack.enter_context(
+                        closing(Serial(self._serial_port)), baudrate=921600
+                    )
+                except Exception:
+                    # maybe it's a virtual serial port where we cannot set the
+                    # baud rate?
+                    serial_port = stack.enter_context(
+                        closing(Serial(self._serial_port))  # , baudrate=921600))
+                    )
 
                 await stack.enter_async_context(
                     UDPSerialBridge(udp_port, serial_port).use()
