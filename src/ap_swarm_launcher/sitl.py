@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from contextlib import AsyncExitStack, asynccontextmanager, closing
+from contextlib import (
+    AbstractContextManager,
+    AsyncExitStack,
+    asynccontextmanager,
+    closing,
+)
 from functools import lru_cache
 from importlib.resources import path as resource_path
 from itertools import count
@@ -430,7 +435,7 @@ class SimulatedDroneSwarm:
                 if isinstance(param_source, tuple):
                     name, value = param_source
                     await fp.write(f"{name}\t{value}\n".encode("utf-8"))
-                elif hasattr(param_source, "__enter__"):
+                elif isinstance(param_source, AbstractContextManager):
                     with param_source as path:
                         await copy_file_async(path, fp)
                         await fp.write(b"\n")
