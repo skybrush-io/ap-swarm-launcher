@@ -54,6 +54,13 @@ def create_parser() -> ArgumentParser:
         help="do not send status packets to UDP port 14550",
     )
     parser.add_argument(
+        "--no-multicast",
+        dest="use_multicast",
+        default=True,
+        action="store_false",
+        help="do not join multicast group to simulate broadcasting on localhost",
+    )
+    parser.add_argument(
         "-d",
         "--data-dir",
         default=None,
@@ -154,10 +161,11 @@ async def run(
     tcp_base_port: Optional[int] = None,
     serial_port: Optional[str] = None,
     use_udp: bool = True,
+    use_multicast: bool = True,
     model: Optional[str] = None,
 ) -> None:
     gcs_address = "127.0.0.1:14550" if use_udp else None
-    multicast_address = "239.255.67.77:14555"
+    multicast_address = "239.255.67.77:14555" if use_multicast else None
 
     sitl_executable = Path.cwd() / sitl_executable
 
