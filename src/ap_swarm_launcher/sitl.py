@@ -443,6 +443,8 @@ class SimulatedDroneSwarm:
                     await copy_file_async(param_source, fp)
                     await fp.write(b"\n")
 
+            # TODO(ntamas): from ArduPilot 4.7, this will probably be
+            # MAV_SYSID instead
             await fp.write(f"SYSID_THISMAV\t{index}\n".encode("utf-8"))
 
             if primary_udp_output:
