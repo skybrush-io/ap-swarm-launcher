@@ -493,6 +493,12 @@ class SimulatedDroneSwarm:
                     if self._multicast_address
                     else "none"
                 ),
+                # Serial port 3 is used for the GPS in the simulator so we
+                # skip it.
+                # Serial ports 4 and 5 could be used for additional TCP ports;
+                # feel free to uncomment the lines below.
+                # 4: (f"tcp:{tcp_port + 10000}" if tcp_port else "none"),
+                # 5: (f"tcp:{tcp_port + 20000}" if tcp_port else "none"),
             },
         )
 
