@@ -139,6 +139,13 @@ def create_parser() -> ArgumentParser:
             "deviation of ANGLE"
         ),
     )
+    parser.add_argument(
+        "--system-id-offset",
+        type=int,
+        default=0,
+        metavar="OFFSET",
+        help="offset to add to the system IDs of the simulated drones",
+    )
 
     parser.add_argument(
         "sitl_executable",
@@ -163,6 +170,7 @@ async def run(
     use_udp: bool = True,
     use_multicast: bool = True,
     model: Optional[str] = None,
+    system_id_offset: int = 0,
 ) -> None:
     gcs_address = "127.0.0.1:14550" if use_udp else None
     multicast_address = "239.255.67.77:14555" if use_multicast else None
@@ -191,6 +199,7 @@ async def run(
         tcp_base_port=tcp_base_port,
         serial_port=serial_port,
         model=model,
+        start_system_id=1 + system_id_offset,
     ).use() as swarm:
         for i in range(num_drones):
             await swarm.add_drone(

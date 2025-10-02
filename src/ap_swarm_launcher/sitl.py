@@ -270,6 +270,7 @@ class SimulatedDroneSwarm:
         tcp_base_port: Optional[int] = None,
         serial_port: Optional[str] = None,
         model: Optional[str] = None,
+        start_system_id: int = 1,
     ):
         """Constructor.
 
@@ -298,6 +299,8 @@ class SimulatedDroneSwarm:
                 number; each drone will get a new TCP port, counting upwards
                 from this base port number.
             model: optional vehicle model name passed to the simulator
+            start_system_id: the system ID of the first simulated drone; each
+                subsequent drone will get a system ID incremented by 1
         """
         self._executable = Path(executable)
         self._dir = Path(dir) if dir else None
@@ -320,7 +323,7 @@ class SimulatedDroneSwarm:
         self._multicast_address = multicast_address
         self._model = model
 
-        self._index_generator = count(1)
+        self._index_generator = count(start_system_id)
 
         self._nursery = None
         self._runner = None
