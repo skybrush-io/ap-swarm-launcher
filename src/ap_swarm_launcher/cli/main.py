@@ -175,7 +175,8 @@ async def run(
     grid = create_grid_formation(num_drones_per_row, spacing, pos_noise)
 
     param_sources: List[Union[Path, str, Tuple[str, float]]] = [
-        "embedded://copter-skybrush.parm"
+        "embedded://copter-default.parm",
+        "embedded://copter-skybrush.parm",
     ]
     param_sources.extend(param)
 
