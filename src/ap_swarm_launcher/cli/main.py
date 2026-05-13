@@ -1,13 +1,13 @@
 """Command-line interface entrypoint for the ArduPilot SITL swarm launcher tool."""
 
 import sys
-
 from argparse import ArgumentParser
 from functools import partial
 from pathlib import Path
 from random import normalvariate
 from typing import List, Optional, Sequence, Tuple, Union
 
+from ap_swarm_launcher.constants import DEFAULT_GCS_PORT, DEFAULT_LISTENER_PORT
 from ap_swarm_launcher.formations import create_grid_formation
 from ap_swarm_launcher.locations import (
     DEFAULT_LOCATION,
@@ -51,7 +51,7 @@ def create_parser() -> ArgumentParser:
         dest="use_udp",
         default=True,
         action="store_false",
-        help="do not send status packets to UDP port 14550",
+        help=f"do not send status packets to UDP port {DEFAULT_GCS_PORT} on localhost",
     )
     parser.add_argument(
         "--no-multicast",
@@ -172,8 +172,11 @@ async def run(
     model: Optional[str] = None,
     system_id_offset: int = 0,
 ) -> None:
-    gcs_address = "127.0.0.1:14550" if use_udp else None
-    multicast_address = "239.255.67.77:14555" if use_multicast else None
+    gcs_port = DEFAULT_GCS_PORT
+    listener_port = DEFAULT_LISTENER_PORT
+
+    gcs_address = f"127.0.0.1:{gcs_port}" if use_udp else None
+    multicast_address = f"239.255.67.77:{listener_port}" if use_multicast else None
 
     sitl_executable = Path.cwd() / sitl_executable
 

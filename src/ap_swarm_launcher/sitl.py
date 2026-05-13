@@ -10,7 +10,6 @@ from functools import lru_cache
 from importlib.resources import path as resource_path
 from itertools import count
 from pathlib import Path
-from trio import open_file, open_nursery, Path as AsyncPath
 from typing import (
     AsyncIterator,
     ContextManager,
@@ -21,6 +20,11 @@ from typing import (
     Tuple,
     Union,
 )
+
+from trio import Path as AsyncPath
+from trio import open_file, open_nursery
+
+from ap_swarm_launcher.constants import DEFAULT_GCS_PORT
 
 from .async_process_runner import (
     AsyncProcessRunner,
@@ -265,7 +269,7 @@ class SimulatedDroneSwarm:
         coordinate_system: Optional[FlatEarthToGPSCoordinateTransformation] = None,
         amsl: Optional[float] = None,
         default_heading: Optional[float] = None,
-        gcs_address: Optional[str] = "127.0.0.1:14550",
+        gcs_address: Optional[str] = None,
         multicast_address: Optional[str] = None,
         tcp_base_port: Optional[int] = None,
         serial_port: Optional[str] = None,
@@ -375,7 +379,7 @@ class SimulatedDroneSwarm:
         return (
             self._gcs_address
             if self._gcs_address
-            else "127.0.0.1:14550"
+            else f"127.0.0.1:{DEFAULT_GCS_PORT}"
             if self._serial_port
             else None
         )

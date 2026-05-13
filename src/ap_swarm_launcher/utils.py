@@ -1,18 +1,20 @@
-from contextlib import AbstractContextManager, AsyncExitStack, contextmanager, ExitStack
+from contextlib import AbstractContextManager, AsyncExitStack, ExitStack, contextmanager
 from os import chdir
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Iterator, Optional, Union
+
 from trio import open_file, sleep_forever
 from trio.socket import (
-    socket,
     AF_INET,
+    IP_MULTICAST_TTL,
     IPPROTO_IP,
     IPPROTO_UDP,
-    IP_MULTICAST_TTL,
     SOCK_DGRAM,
+    socket,
 )
 
-from typing import Iterator, Optional, Union
+from ap_swarm_launcher.constants import DEFAULT_LISTENER_PORT
 
 __all__ = (
     "copy_file_async",
@@ -50,7 +52,7 @@ async def copy_file_async(src, dest) -> None:
 
 
 async def route_local_broadcast_traffic_to_multicast(
-    address: Optional[str], local_port: int = 14555
+    address: Optional[str], local_port: int = DEFAULT_LISTENER_PORT
 ):
     """Asynchronous task that forwards UDP packets sent to a port on
     localhost to the given multicast address.
