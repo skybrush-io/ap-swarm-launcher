@@ -450,9 +450,10 @@ class SimulatedDroneSwarm:
                     await copy_file_async(param_source, fp)
                     await fp.write(b"\n")
 
-            # TODO(ntamas): from ArduPilot 4.7, this will probably be
-            # MAV_SYSID instead
+            # ArduPilot <4.7 uses SYSID_THISMAV; 4.7+ uses MAV_SYSID. Write
+            # both — the autopilot silently ignores unknown params.
             await fp.write(f"SYSID_THISMAV\t{index}\n".encode("utf-8"))
+            await fp.write(f"MAV_SYSID\t{index}\n".encode("utf-8"))
 
             if primary_udp_output:
                 # We need the first serial port for primary telemetry
