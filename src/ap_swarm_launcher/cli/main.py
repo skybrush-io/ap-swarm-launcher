@@ -40,6 +40,13 @@ def create_parser() -> ArgumentParser:
         help="open TCP connections for each drone, starting from PORT",
     )
     parser.add_argument(
+        "--rc-base-port",
+        default=None,
+        type=int,
+        metavar="PORT",
+        help="listen for RC input on UDP ports PORT + i for each drone",
+    )
+    parser.add_argument(
         "--serial-port",
         default=None,
         type=str,
@@ -166,6 +173,7 @@ async def run(
     pos_noise: float = 0.0,
     yaw_noise: float = 0.0,
     tcp_base_port: Optional[int] = None,
+    rc_base_port: Optional[int] = None,
     serial_port: Optional[str] = None,
     use_udp: bool = True,
     use_multicast: bool = True,
@@ -200,6 +208,7 @@ async def run(
         gcs_address=gcs_address,
         multicast_address=multicast_address,
         tcp_base_port=tcp_base_port,
+        rc_base_port=rc_base_port,
         serial_port=serial_port,
         model=model,
         start_system_id=1 + system_id_offset,
