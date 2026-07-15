@@ -11,8 +11,16 @@ dependencies = ["trio>=0.21.0", "pyserial>=3.5", "exceptiongroup>=1.2.2"]
 ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
 
 [tool.ruff]
-lint.ignore = ["B905", "C901", "E402", "E501"]
-lint.select = ["B", "C", "E", "F", "W"]
+lint.ignore = ["B905", "C901", "E402", "E501", "S101"]
+lint.select = [
+  "B", # flake8-bugbear
+  "C", # flake8-comprehensions
+  "E", # pycodestyle errors
+  "F", # pyflakes
+  "I", # isort
+  "S", # flake8-bandit
+  "W", # pycodestyle warnings
+]
 
 [build-system]
 requires = ["uv_build>=0.7.18,<0.8"]

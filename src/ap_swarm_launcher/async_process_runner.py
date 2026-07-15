@@ -9,16 +9,17 @@ from functools import partial
 from signal import Signals
 from subprocess import PIPE, STDOUT
 from sys import exc_info
+from typing import Any, Callable, Optional, Union
+
 from trio import (
+    TASK_STATUS_IGNORED,
     Event,
+    Process,
     open_memory_channel,
     open_nursery,
-    Process,
     sleep,
-    TASK_STATUS_IGNORED,
 )
-from trio.abc import ReceiveStream, SendStream, SendChannel
-from typing import Any, Callable, List, Optional, Union
+from trio.abc import ReceiveStream, SendChannel, SendStream
 
 try:
     from trio.lowlevel import open_process
@@ -240,8 +241,8 @@ class _AsyncProcessRunner:
     separate thread.
     """
 
-    _managed_processes: Optional[List[ManagedAsyncProcess]]
-    _on_terminated: List[Callable[[ManagedAsyncProcess, int], None]]
+    _managed_processes: Optional[list[ManagedAsyncProcess]]
+    _on_terminated: list[Callable[[ManagedAsyncProcess, int], None]]
 
     def __init__(self, sidebar_width: int = 10):
         """Constructor.
@@ -463,8 +464,8 @@ async def AsyncProcessRunner(*args, **kwds):
 
 async def _test():
     async with AsyncProcessRunner(sidebar_width=20) as runner:
-        await runner.start("while true; do echo yes; sleep 0.5; done", shell=True)
-        await runner.start("while true; do echo no; sleep 0.3; done", shell=True)
+        await runner.start("while true; do echo yes; sleep 0.5; done", shell=True)  # noqa: S604
+        await runner.start("while true; do echo no; sleep 0.3; done", shell=True)  # noqa: S604
 
 
 if __name__ == "__main__":

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, closing
-from typing import AsyncIterator, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from trio import open_memory_channel, open_nursery, to_thread
 from trio.abc import SendChannel
 from trio.socket import (
-    socket,
     AF_INET,
     IPPROTO_UDP,
     SOCK_DGRAM,
+    socket,
 )
 
 if TYPE_CHECKING:

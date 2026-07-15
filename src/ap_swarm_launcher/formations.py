@@ -1,12 +1,12 @@
 """Takeoff area formations for the SITL drone swarm simulator."""
 
 from random import normalvariate
-from typing import Callable, Tuple
+from typing import Callable
 
 __all__ = ("create_grid_formation",)
 
 
-Point = Tuple[float, float]
+Point = tuple[float, float]
 """Type specification for a single 2D point that a formation returns."""
 
 

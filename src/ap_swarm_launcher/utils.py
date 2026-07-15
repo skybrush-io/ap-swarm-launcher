@@ -1,8 +1,9 @@
+from collections.abc import Iterator
 from contextlib import AbstractContextManager, AsyncExitStack, ExitStack, contextmanager
 from os import chdir
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional, Union
+from typing import Optional, Union
 
 from trio import open_file, sleep_forever
 from trio.socket import (

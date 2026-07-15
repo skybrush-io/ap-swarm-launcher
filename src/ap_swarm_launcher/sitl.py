@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator, Sequence
 from contextlib import (
     AbstractContextManager,
     AsyncExitStack,
@@ -11,14 +12,7 @@ from importlib.resources import path as resource_path
 from itertools import count
 from pathlib import Path
 from typing import (
-    AsyncIterator,
     ContextManager,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
 )
 
 from trio import Path as AsyncPath
@@ -69,7 +63,7 @@ used in the SITL before ArduCopter 4.5.0.
 """
 
 
-def _to_uart_index(id_or_index: Union[str, int]) -> int:
+def _to_uart_index(id_or_index: str | int) -> int:
     """Takes an input that is either a numeric UART index or a character-based
     UART ID and returns the numeric UART index.
     """
@@ -79,7 +73,7 @@ def _to_uart_index(id_or_index: Union[str, int]) -> int:
         return _uart_id_to_index_map[id_or_index]
 
 
-def _to_uart_id(id_or_index: Union[str, int]) -> str:
+def _to_uart_id(id_or_index: str | int) -> str:
     """Takes an input that is either a numeric UART index or a character-based
     UART ID and returns the character-based UART ID.
     """
@@ -90,16 +84,16 @@ def _to_uart_id(id_or_index: Union[str, int]) -> str:
 
 
 def create_args_for_simulator(
-    model: Optional[str] = None,
-    param_file: Optional[Union[str, Path]] = None,
+    model: str | None = None,
+    param_file: str | Path | None = None,
     use_console: bool = False,
     home: GPSCoordinate = DEFAULT_LOCATION.origin,
     heading: float = 0,
-    index: Optional[int] = 0,
-    uarts: Optional[Dict[str, str]] = None,
-    rc_input_port: Optional[int] = None,
+    index: int | None = 0,
+    uarts: dict[str, str] | None = None,
+    rc_input_port: int | None = None,
     speedup: float = 1,
-) -> List[str]:
+) -> list[str]:
     """Creates the argument list to execute the SITL simulator.
 
     Parameters:
@@ -166,7 +160,7 @@ def get_simulator_version(executable: Path) -> tuple[int, int, int]:
     """
     from subprocess import run
 
-    proc = run([executable, "--help"], capture_output=True)
+    proc = run([executable, "--help"], capture_output=True)  # noqa: S603
     if b"--disable-fgview" in proc.stdout:
         return (4, 4, 4)
     else:
@@ -178,7 +172,7 @@ async def start_simulator(
     *,
     runner: AsyncProcessRunnerContext,
     name: str = "ArduCopter",
-    cwd: Optional[Union[str, Path]] = None,
+    cwd: str | Path | None = None,
     **kwds,
 ) -> ManagedAsyncProcess:
     """Starts the SITL simulator, supervised by the given asynchronous process
@@ -246,22 +240,22 @@ class SimulatedDroneSwarm:
     _executable: Path
     """Full path to the ArduPilot SITL executable."""
 
-    _gcs_address: Optional[str] = None
+    _gcs_address: str | None = None
 
-    _swarm_dir: Optional[Path] = None
+    _swarm_dir: Path | None = None
 
-    _serial_port: Optional[str] = None
+    _serial_port: str | None = None
     """Virtual serial port where the status packets of the simulated drones will be
     aggregated and dumped to. ``None`` if the serial port is not needed.
     """
 
-    _tcp_base_port: Optional[int] = None
+    _tcp_base_port: int | None = None
     """Base number of a TCP port range where the simulated instances will listen
     for incoming connections, or ``None`` if TCP ports are not needed. The i-th
     simulated instance (0-based indexing) will listen at ``_tcp_base_port + i``.
     """
 
-    _rc_base_port: Optional[int] = None
+    _rc_base_port: int | None = None
     """Base UDP port for simulated RC input. Drone *i* (1-based) listens at
     ``_rc_base_port + (i - 1)`` when set.
     """
@@ -269,17 +263,17 @@ class SimulatedDroneSwarm:
     def __init__(
         self,
         executable: Path,
-        dir: Optional[Path] = None,
-        params: Optional[Sequence[Union[str, Path, Tuple[str, float]]]] = None,
-        coordinate_system: Optional[FlatEarthToGPSCoordinateTransformation] = None,
-        amsl: Optional[float] = None,
-        default_heading: Optional[float] = None,
-        gcs_address: Optional[str] = None,
-        multicast_address: Optional[str] = None,
-        tcp_base_port: Optional[int] = None,
-        rc_base_port: Optional[int] = None,
-        serial_port: Optional[str] = None,
-        model: Optional[str] = None,
+        dir: Path | None = None,
+        params: Sequence[str | Path | tuple[str, float]] | None = None,
+        coordinate_system: FlatEarthToGPSCoordinateTransformation | None = None,
+        amsl: float | None = None,
+        default_heading: float | None = None,
+        gcs_address: str | None = None,
+        multicast_address: str | None = None,
+        tcp_base_port: int | None = None,
+        rc_base_port: int | None = None,
+        serial_port: str | None = None,
+        model: str | None = None,
         start_system_id: int = 1,
     ):
         """Constructor.
@@ -384,7 +378,7 @@ class SimulatedDroneSwarm:
                 self._runner = None
                 self._swarm_dir = None
 
-    def _get_primary_udp_output_address(self) -> Optional[str]:
+    def _get_primary_udp_output_address(self) -> str | None:
         return (
             self._gcs_address
             if self._gcs_address
@@ -403,7 +397,7 @@ class SimulatedDroneSwarm:
     async def _start_simulated_drone(
         self,
         home: Point,
-        heading: Optional[float] = None,
+        heading: float | None = None,
     ) -> ManagedAsyncProcess:
         """Starts the simulator process for a single drone with the given
         parameters.
@@ -421,7 +415,7 @@ class SimulatedDroneSwarm:
 
         index = next(self._index_generator)
 
-        drone_id = "{0:03}".format(index)
+        drone_id = f"{index:03}"
         drone_dir = self._swarm_dir / "drones" / drone_id
         drone_fs_dir = drone_dir / "fs"
 
@@ -450,7 +444,7 @@ class SimulatedDroneSwarm:
 
                 if isinstance(param_source, tuple):
                     name, value = param_source
-                    await fp.write(f"{name}\t{value}\n".encode("utf-8"))
+                    await fp.write(f"{name}\t{value}\n".encode())
                 elif isinstance(param_source, AbstractContextManager):
                     with param_source as path:
                         await copy_file_async(path, fp)
@@ -461,31 +455,29 @@ class SimulatedDroneSwarm:
 
             # ArduPilot <4.7 uses SYSID_THISMAV; 4.7+ uses MAV_SYSID. Write
             # both — the autopilot silently ignores unknown params.
-            await fp.write(f"SYSID_THISMAV\t{index}\n".encode("utf-8"))
-            await fp.write(f"MAV_SYSID\t{index}\n".encode("utf-8"))
+            await fp.write(f"SYSID_THISMAV\t{index}\n".encode())
+            await fp.write(f"MAV_SYSID\t{index}\n".encode())
 
             if primary_udp_output:
                 # We need the first serial port for primary telemetry
-                await fp.write("SERIAL1_PROTOCOL\t2\n".encode("utf-8"))
+                await fp.write(b"SERIAL1_PROTOCOL\t2\n")
 
             if self._multicast_address:
                 # We need a second serial port for receiving multicast traffic
                 # (which is used to simulate broadcast). At the same time, we
                 # disable MAVLink forwarding to/from this port
-                await fp.write("SERIAL2_PROTOCOL\t2\n".encode("utf-8"))
-                await fp.write("SERIAL2_OPTIONS\t1024\n".encode("utf-8"))
+                await fp.write(b"SERIAL2_PROTOCOL\t2\n")
+                await fp.write(b"SERIAL2_OPTIONS\t1024\n")
 
             if tcp_port:
                 # We also need a serial port for receiving direct traffic from
                 # the TCP port associated to the UAV.
-                await fp.write("SERIAL0_PROTOCOL\t2\n".encode("utf-8"))
+                await fp.write(b"SERIAL0_PROTOCOL\t2\n")
 
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
         rc_input_port = (
-            self._rc_base_port + (index - 1)
-            if self._rc_base_port is not None
-            else None
+            self._rc_base_port + (index - 1) if self._rc_base_port is not None else None
         )
 
         process = await start_simulator(
@@ -549,7 +541,7 @@ class SimulatedDroneSwarmContext:
     async def add_drone(
         self,
         home: Point,
-        heading: Optional[float] = None,
+        heading: float | None = None,
     ) -> ManagedAsyncProcess:
         """Adds a new drone to the swarm and starts the corresponding simulator
         process.

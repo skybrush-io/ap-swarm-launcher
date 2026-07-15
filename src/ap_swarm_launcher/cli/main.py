@@ -2,10 +2,11 @@
 
 import sys
 from argparse import ArgumentParser
+from collections.abc import Sequence
 from functools import partial
 from pathlib import Path
 from random import normalvariate
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Optional, Union
 
 from ap_swarm_launcher.constants import DEFAULT_GCS_PORT, DEFAULT_LISTENER_PORT
 from ap_swarm_launcher.formations import create_grid_formation
@@ -18,7 +19,7 @@ from ap_swarm_launcher.sitl import SimulatedDroneSwarm
 from ap_swarm_launcher.utils import route_local_broadcast_traffic_to_multicast
 
 
-def parse_parameter(value: str) -> Union[Path, Tuple[str, float]]:
+def parse_parameter(value: str) -> Union[Path, tuple[str, float]]:
     name, sep, value = value.partition("=")
     if sep:
         return name.strip(), float(value)
@@ -167,7 +168,7 @@ async def run(
     data_dir: Optional[Path] = None,
     home: LocationDefinition = DEFAULT_LOCATION,
     num_drones: int = 1,
-    param: Sequence[Union[Path, Tuple[str, float]]] = (),
+    param: Sequence[Union[Path, tuple[str, float]]] = (),
     spacing: float = 3,
     num_drones_per_row: Optional[int] = None,
     pos_noise: float = 0.0,
@@ -193,7 +194,7 @@ async def run(
 
     grid = create_grid_formation(num_drones_per_row, spacing, pos_noise)
 
-    param_sources: List[Union[Path, str, Tuple[str, float]]] = [
+    param_sources: list[Union[Path, str, tuple[str, float]]] = [
         "embedded://copter-default.parm",
         "embedded://copter-skybrush.parm",
     ]

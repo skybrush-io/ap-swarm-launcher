@@ -4,7 +4,7 @@ functions.
 
 from dataclasses import dataclass
 from math import cos, degrees, radians, sin, sqrt
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 __all__ = ("GPSCoordinate", "LOCATIONS", "parse_location")
 
@@ -89,7 +89,7 @@ class FlatEarthToGPSCoordinateTransformation:
                 normalized = type
 
         if not normalized:
-            raise ValueError("unknown coordinate system type: {0!r}".format(type))
+            raise ValueError(f"unknown coordinate system type: {type!r}")
 
         return normalized
 
@@ -174,7 +174,7 @@ class FlatEarthToGPSCoordinateTransformation:
         self._ymul = 1 if self._type[1] == "e" else -1
         self._zmul = 1 if self._type[2] == "u" else -1
 
-    def to_flat_earth(self, coord: GPSCoordinate) -> Tuple[float, float, float]:
+    def to_flat_earth(self, coord: GPSCoordinate) -> tuple[float, float, float]:
         """Converts the given GPS coordinates to flat Earth coordinates.
 
         Parameters:
@@ -195,7 +195,7 @@ class FlatEarthToGPSCoordinateTransformation:
         z = coord.amsl - self._origin.amsl
         return (x * self._xmul, y * self._ymul, z * self._zmul)
 
-    def to_gps(self, coord: Tuple[float, float, float]) -> GPSCoordinate:
+    def to_gps(self, coord: tuple[float, float, float]) -> GPSCoordinate:
         """Converts the given flat Earth coordinates to GPS coordinates.
 
         Parameters:
@@ -271,7 +271,7 @@ def parse_location(value: str) -> LocationDefinition:
     )
 
 
-LOCATIONS: Dict[str, LocationDefinition] = {
+LOCATIONS: dict[str, LocationDefinition] = {
     "CMAC": LocationDefinition(
         GPSCoordinate(lat=-35.363261, lon=149.165230, amsl=584), orientation=353
     )
