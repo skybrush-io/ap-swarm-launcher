@@ -261,6 +261,11 @@ class SimulatedDroneSwarm:
     simulated instance (0-based indexing) will listen at ``_tcp_base_port + i``.
     """
 
+    _rc_base_port: Optional[int] = None
+    """Base UDP port for simulated RC input. Drone *i* (1-based) listens at
+    ``_rc_base_port + (i - 1) * 10`` when set.
+    """
+
     def __init__(
         self,
         executable: Path,
@@ -272,6 +277,7 @@ class SimulatedDroneSwarm:
         gcs_address: Optional[str] = None,
         multicast_address: Optional[str] = None,
         tcp_base_port: Optional[int] = None,
+        rc_base_port: Optional[int] = None,
         serial_port: Optional[str] = None,
         model: Optional[str] = None,
         start_system_id: int = 1,
@@ -302,6 +308,8 @@ class SimulatedDroneSwarm:
                 be available via a TCP connection. This is the base port
                 number; each drone will get a new TCP port, counting upwards
                 from this base port number.
+            rc_base_port: base UDP port for simulated RC input; drone *i*
+                listens at ``rc_base_port + (i - 1) * 10``
             model: optional vehicle model name passed to the simulator
             start_system_id: the system ID of the first simulated drone; each
                 subsequent drone will get a system ID incremented by 1
@@ -311,6 +319,7 @@ class SimulatedDroneSwarm:
         self._params = list(params) if params else []
         self._serial_port = serial_port
         self._tcp_base_port = int(tcp_base_port) if tcp_base_port else None
+        self._rc_base_port = int(rc_base_port) if rc_base_port else None
 
         if coordinate_system:
             self._coordinate_system = coordinate_system
@@ -473,6 +482,12 @@ class SimulatedDroneSwarm:
 
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
+        rc_input_port = (
+            self._rc_base_port + (index - 1) * 10
+            if self._rc_base_port is not None
+            else None
+        )
+
         process = await start_simulator(
             self._executable,
             runner=self._runner,
@@ -483,6 +498,7 @@ class SimulatedDroneSwarm:
             index=index - 1,
             model=self._model,
             cwd=drone_fs_dir,
+            rc_input_port=rc_input_port,
             uarts={
                 # Serial port 0 is for direct access via TCP. This corresponds to
                 # SERIAL0 in the params, which is also a "trusted" port on
