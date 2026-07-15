@@ -44,7 +44,7 @@ def create_parser() -> ArgumentParser:
         default=None,
         type=int,
         metavar="PORT",
-        help="listen for RC input on UDP ports PORT + i*10 for each drone",
+        help="listen for RC input on UDP ports PORT + i for each drone",
     )
     parser.add_argument(
         "--serial-port",

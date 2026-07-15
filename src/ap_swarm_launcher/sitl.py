@@ -263,7 +263,7 @@ class SimulatedDroneSwarm:
 
     _rc_base_port: Optional[int] = None
     """Base UDP port for simulated RC input. Drone *i* (1-based) listens at
-    ``_rc_base_port + (i - 1) * 10`` when set.
+    ``_rc_base_port + (i - 1)`` when set.
     """
 
     def __init__(
@@ -309,7 +309,7 @@ class SimulatedDroneSwarm:
                 number; each drone will get a new TCP port, counting upwards
                 from this base port number.
             rc_base_port: base UDP port for simulated RC input; drone *i*
-                listens at ``rc_base_port + (i - 1) * 10``
+                listens at ``rc_base_port + (i - 1)``
             model: optional vehicle model name passed to the simulator
             start_system_id: the system ID of the first simulated drone; each
                 subsequent drone will get a system ID incremented by 1
@@ -483,7 +483,7 @@ class SimulatedDroneSwarm:
         await AsyncPath(drone_fs_dir).mkdir(parents=True, exist_ok=True)  # type: ignore
 
         rc_input_port = (
-            self._rc_base_port + (index - 1) * 10
+            self._rc_base_port + (index - 1)
             if self._rc_base_port is not None
             else None
         )
