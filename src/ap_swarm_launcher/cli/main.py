@@ -121,6 +121,13 @@ def create_parser() -> ArgumentParser:
         "settings",
     )
     parser.add_argument(
+        "--skip-default-params",
+        default=False,
+        action="store_true",
+        help="do not prepend the embedded copter-default and copter-skybrush "
+        "parameter files; only --param sources are applied",
+    )
+    parser.add_argument(
         "--spacing",
         type=float,
         default=3.0,
@@ -169,6 +176,7 @@ async def run(
     home: LocationDefinition = DEFAULT_LOCATION,
     num_drones: int = 1,
     param: Sequence[Union[Path, tuple[str, float]]] = (),
+    skip_default_params: bool = False,
     spacing: float = 3,
     num_drones_per_row: Optional[int] = None,
     pos_noise: float = 0.0,
@@ -194,10 +202,14 @@ async def run(
 
     grid = create_grid_formation(num_drones_per_row, spacing, pos_noise)
 
-    param_sources: list[Union[Path, str, tuple[str, float]]] = [
-        "embedded://copter-default.parm",
-        "embedded://copter-skybrush.parm",
-    ]
+    param_sources: list[Union[Path, str, tuple[str, float]]] = []
+    if not skip_default_params:
+        param_sources.extend(
+            [
+                "embedded://copter-default.parm",
+                "embedded://copter-skybrush.parm",
+            ]
+        )
     param_sources.extend(param)
 
     async with SimulatedDroneSwarm(
