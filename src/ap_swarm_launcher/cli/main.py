@@ -18,6 +18,20 @@ from ap_swarm_launcher.locations import (
 from ap_swarm_launcher.sitl import SimulatedDroneSwarm
 from ap_swarm_launcher.utils import route_local_broadcast_traffic_to_multicast
 
+PARAM_PRESETS: dict[str, tuple[str, ...]] = {
+    "copter": (
+        "embedded://copter-default.parm",
+        "embedded://copter-skybrush.parm",
+    ),
+    "none": (),
+}
+"""Embedded parameter files to apply before the ``--param`` sources, keyed by
+preset name.
+"""
+
+DEFAULT_PARAM_PRESET = "copter"
+"""Parameter preset to use when ``--param-preset`` is omitted."""
+
 
 def parse_parameter(value: str) -> Union[Path, tuple[str, float]]:
     name, sep, value = value.partition("=")
@@ -121,6 +135,15 @@ def create_parser() -> ArgumentParser:
         "settings",
     )
     parser.add_argument(
+        "--param-preset",
+        default=DEFAULT_PARAM_PRESET,
+        choices=sorted(PARAM_PRESETS),
+        metavar="PRESET",
+        help="embedded parameter preset to apply before the --param sources "
+        f"(one of: {', '.join(sorted(PARAM_PRESETS))}; default: "
+        f"{DEFAULT_PARAM_PRESET}). Use 'none' to apply only the --param sources",
+    )
+    parser.add_argument(
         "--spacing",
         type=float,
         default=3.0,
@@ -169,6 +192,7 @@ async def run(
     home: LocationDefinition = DEFAULT_LOCATION,
     num_drones: int = 1,
     param: Sequence[Union[Path, tuple[str, float]]] = (),
+    param_preset: str = DEFAULT_PARAM_PRESET,
     spacing: float = 3,
     num_drones_per_row: Optional[int] = None,
     pos_noise: float = 0.0,
@@ -194,10 +218,9 @@ async def run(
 
     grid = create_grid_formation(num_drones_per_row, spacing, pos_noise)
 
-    param_sources: list[Union[Path, str, tuple[str, float]]] = [
-        "embedded://copter-default.parm",
-        "embedded://copter-skybrush.parm",
-    ]
+    param_sources: list[Union[Path, str, tuple[str, float]]] = list(
+        PARAM_PRESETS[param_preset]
+    )
     param_sources.extend(param)
 
     async with SimulatedDroneSwarm(
