@@ -8,7 +8,7 @@ requires-python = ">=3.9"
 dependencies = ["trio>=0.21.0", "pyserial>=3.5", "exceptiongroup>=1.2.2"]
 
 [project.scripts]
-ap-sitl-swarm = "ap_swarm_launcher.cli.__main__:main"
+ap-sitl-swarm = "ap_swarm_launcher.cli.main:start"
 
 [tool.ruff]
 lint.ignore = ["B905", "C901", "E402", "E501", "S101"]
