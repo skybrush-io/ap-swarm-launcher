@@ -23,5 +23,5 @@ lint.select = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.7.18,<0.8"]
+requires = ["uv_build>=0.13,<0.14"]
 build-backend = "uv_build"
