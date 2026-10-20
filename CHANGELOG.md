@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `--skip-default-params` to omit the embedded `copter-default.parm` and
-  `copter-skybrush.parm` files so callers can supply a full parameter set via
-  `--param` (e.g. for non-Copter SITL binaries).
+- Added `--param-preset` to select which embedded parameter files are applied
+  before the `--param` sources. `copter` (the default) applies
+  `copter-default.parm` and `copter-skybrush.parm`. `none` applies no embedded
+  files, so callers can supply a full parameter set via `--param` (e.g. for
+  non-Copter SITL binaries).
 
 ## [1.1.0] - 2026-07-15
 
